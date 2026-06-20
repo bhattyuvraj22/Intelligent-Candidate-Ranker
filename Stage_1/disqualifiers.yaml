@@ -1,0 +1,73 @@
+# Redrob Hackathon — Stage 1 Hard-Kill Configuration
+# Edit THIS file when the JD changes. Do not hardcode thresholds in stage1_rules.py.
+
+# ── Timeline consistency tolerances ──────────────────────────────────
+timeline:
+  duration_tolerance_months: 2          # allowed drift between stated duration_months and (end-start) date diff
+  experience_overshoot_pct: 25          # sum(career duration_months) can exceed years_of_experience*12 by at most this %
+
+# ── Consulting-only disqualifier (JD explicit reject, unless prior product-co experience) ──
+consulting_only:
+  hard_reject: true
+  blocklist_companies:
+    - TCS
+    - Infosys
+    - Wipro
+    - Accenture
+    - Cognizant
+    - Capgemini
+    - HCL
+    - Tech Mahindra
+    - Mindtree
+
+# ── Location / relocation (JD says "case-by-case" outside India → SOFT flag, not hard reject) ──
+location:
+  hard_reject: false                    # keep false unless team decides otherwise
+  target_cities:
+    - Pune
+    - Noida
+    - Hyderabad
+    - Mumbai
+    - Delhi
+    - Gurgaon
+    - NCR
+
+# ── Zero-tech-signal backstop (crude permissive filter — Stage 1.6 NLI handles nuance later) ──
+zero_tech_signal:
+  hard_reject: true
+  technical_keywords:                   # if NONE of these appear anywhere (skills, titles, summary) → reject
+    - python
+    - sql
+    - ml
+    - ai
+    - machine learning
+    - data
+    - engineer
+    - developer
+    - llm
+    - nlp
+    - embedding
+    - model
+    - pipeline
+    - cloud
+    - aws
+    - azure
+    - gcp
+    - tensorflow
+    - pytorch
+    - algorithm
+    - software
+    - backend
+    - api
+
+# ── Job-hopping / title-chaser proxy (SOFT flag — pattern is hard to verify reliably) ──
+job_hopping:
+  hard_reject: false
+  short_stint_months: 18
+  min_short_stints_to_flag: 3
+
+# ── Experience band (JD: 5-9yrs "not a hard requirement" → SOFT flag only) ──
+experience_band:
+  hard_reject: false
+  min_years: 4
+  max_years: 9
