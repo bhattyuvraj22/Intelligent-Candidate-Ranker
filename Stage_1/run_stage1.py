@@ -1,12 +1,13 @@
 """
-Stage 1 Runner — Hard Filter Pipeline
-Streams candidates.jsonl line by line (no full load into memory).
+Stage 1 Runner — Hard Filter + Honeypot Flag Pipeline
+Streams candidates.jsonl line by line (no full memory load).
+
 Outputs:
-  - stage1_passed.jsonl  : candidates surviving all 7 filters
-  - stage1_rejected.jsonl: rejected candidates with filter reason tag
+  stage1_passed.jsonl   — survivors with _honeypot_flags + _location_multiplier attached
+  stage1_rejected.jsonl — rejected candidates with _stage1_rejected reason tag
 
 Usage:
-  python run_stage1.py --input candidates.jsonl --out_dir ./output
+  python3 run_stage1.py --input /path/to/candidates.jsonl --out_dir ./output
 """
 import argparse
 import json
@@ -23,9 +24,11 @@ def run(input_path: Path, out_dir: Path) -> None:
     passed_path = out_dir / "stage1_passed.jsonl"
     rejected_path = out_dir / "stage1_rejected.jsonl"
 
-    total = 0
-    passed = 0
+    total = passed = 0
     filter_counts = Counter()
+    honeypot_counts = Counter()
+    location_penalized = 0
+    tier2_rescued = 0
     start = time.time()
 
     with (
@@ -42,7 +45,7 @@ def run(input_path: Path, out_dir: Path) -> None:
             try:
                 candidate = json.loads(line)
             except json.JSONDecodeError as e:
-                print(f"[WARN] Skipping malformed JSON line {total}: {e}", file=sys.stderr)
+                print(f"[WARN] Skipping malformed line {total}: {e}", file=sys.stderr)
                 continue
 
             ok, reason = apply_all_filters(candidate)
@@ -50,71 +53,78 @@ def run(input_path: Path, out_dir: Path) -> None:
             if ok:
                 fpass.write(json.dumps(candidate, ensure_ascii=False) + "\n")
                 passed += 1
+                # Track soft signals for summary
+                if candidate.get("_location_multiplier", 1.0) < 1.0:
+                    location_penalized += 1
+                if candidate.get("_tier2_rescue"):
+                    tier2_rescued += 1
+                for flag in candidate.get("_honeypot_flags", []):
+                    honeypot_counts[flag] += 1
             else:
-                # Tag the record with rejection reason for audit trail
                 candidate["_stage1_rejected"] = reason
                 frej.write(json.dumps(candidate, ensure_ascii=False) + "\n")
-                # Extract filter tag (e.g. "F1:location") for counter
                 tag = reason.split("|")[0].strip() if reason else "unknown"
                 filter_counts[tag] += 1
 
-            # Progress every 10K
             if total % 10_000 == 0:
                 elapsed = time.time() - start
-                print(f"  Processed {total:,} | passed so far: {passed:,} | {elapsed:.1f}s")
+                print(f"  Processed {total:,} | passed: {passed:,} | {elapsed:.1f}s")
 
     elapsed = time.time() - start
     rejected = total - passed
 
-    # ── Summary report ────────────────────────────────────────────────────────
-    print("\n" + "=" * 60)
+    print("\n" + "=" * 65)
     print("STAGE 1 RESULTS")
-    print("=" * 60)
-    print(f"Total candidates processed : {total:,}")
+    print("=" * 65)
+    print(f"Total processed            : {total:,}")
     print(f"Passed all filters         : {passed:,}  ({passed/total*100:.1f}%)")
     print(f"Rejected                   : {rejected:,}  ({rejected/total*100:.1f}%)")
-    print(f"Time elapsed               : {elapsed:.1f}s")
+    print(f"Time                       : {elapsed:.1f}s")
     print()
-    print("Eliminated per filter (in order applied):")
+    print("Hard filter eliminations (in order):")
     for tag, count in sorted(filter_counts.items()):
-        print(f"  {tag:<45} {count:>7,}")
+        print(f"  {tag:<50} {count:>7,}")
     print()
-    print(f"Output — passed  : {passed_path}")
-    print(f"Output — rejected: {rejected_path}")
-    print("=" * 60)
+    print("Passed candidates — soft signals:")
+    print(f"  Location multiplier 0.35 applied (abroad, no relocate) : {location_penalized:>7,}")
+    print(f"  Tier2 rescue (AI title + tier2 skills + retrieval desc) : {tier2_rescued:>7,}")
+    print()
+    print("Honeypot flags on passed candidates:")
+    for flag, count in sorted(honeypot_counts.items()):
+        print(f"  {flag:<50} {count:>7,}")
+    print()
+    print(f"Passed  → {passed_path}")
+    print(f"Rejected→ {rejected_path}")
+    print("=" * 65)
 
-    # Sanity check: warn if passed count is wildly off expected
     if passed < 5_000:
-        print(f"\n[WARN] Only {passed:,} passed — filters may be too aggressive. Review rejected sample.")
+        print(f"\n[WARN] Only {passed:,} passed — filters may be too aggressive.")
     if passed > 20_000:
-        print(f"\n[WARN] {passed:,} passed — filters may be too lenient. Review rejected sample.")
+        print(f"\n[WARN] {passed:,} passed — filters may be too lenient.")
 
 
-def main() -> None:
+def main():
     parser = argparse.ArgumentParser(description="Stage 1 hard filter pipeline")
     parser.add_argument(
-        "--input",
-        type=Path,
-        default=Path("/home/claude/challenge_data/[PUB] India_runs_data_and_ai_challenge/India_runs_data_and_ai_challenge/candidates.jsonl"),
+        "--input", type=Path,
+        default=Path("candidates.jsonl"),
         help="Path to candidates.jsonl",
     )
     parser.add_argument(
-        "--out_dir",
-        type=Path,
+        "--out_dir", type=Path,
         default=Path("./output"),
-        help="Output directory for passed/rejected files",
+        help="Output directory",
     )
     args = parser.parse_args()
 
     if not args.input.exists():
-        print(f"[ERROR] Input file not found: {args.input}", file=sys.stderr)
+        print(f"[ERROR] Input not found: {args.input}", file=sys.stderr)
         sys.exit(1)
 
-    print(f"Stage 1 — Hard Filters")
+    print("Stage 1 — Hard Filters + Honeypot Flags")
     print(f"Input : {args.input}")
     print(f"Output: {args.out_dir}")
     print()
-
     run(args.input, args.out_dir)
 
 

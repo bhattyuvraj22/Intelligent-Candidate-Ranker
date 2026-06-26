@@ -1,3 +1,7 @@
-files.zip
 candidates.jsonl
-output
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+output/
+*.jsonl

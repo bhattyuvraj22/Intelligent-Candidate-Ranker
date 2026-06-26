@@ -1,0 +1,167 @@
+# Stage 1 — Hard Filter + Honeypot Flag Configuration (v4 FINAL)
+# Every threshold backed by dataset analysis + gap distribution audit.
+# DO NOT tighten without re-reading the report.
+#
+# Hard filters  → F1–F7, H1, H3, H4 : binary OUT on first failure
+# Soft flags    → H1-soft, H5        : PASS but flagged for Stage 4 penalty
+
+# ══════════════════════════════════════════════════════════════
+# HARD FILTERS
+# ══════════════════════════════════════════════════════════════
+
+hard_filters:
+
+  # F1 — Location
+  # PASS: India | abroad + willing to relocate | abroad + tier1 skill
+  # OUT:  abroad + not willing + no tier1 skill
+  # No multipliers here — location penalty applied in Stage 4.
+  # v4: removed multiplier attachment from Stage 1 entirely.
+  location:
+    enabled: true
+    pass_conditions:
+      - country == India
+      - willing_to_relocate == true
+      - has_tier1_skill == true
+    else: hard_reject   # F1:abroad_no_relocate_no_tier1
+
+  # F2 — Consulting-Only Career
+  # Report: 9,745 candidates. Explicit JD disqualifier.
+  # One product stint anywhere = PASS.
+  consulting_only:
+    enabled: true
+    services_industries:
+      - "IT Services"
+      - "Consulting"
+      - "Staffing"
+      - "Outsourcing"
+      - "BPO/KPO"
+
+  # F3 — Years of Experience Band
+  # Min=3 (not 5) — strong junior ML worth evaluating.
+  # Max=15 (not 9) — old script used 9, too aggressive.
+  # Only 7 eliminated at max=15 (all 15.2–16.9 yrs, correct).
+  experience_band:
+    enabled: true
+    min_years: 3.0
+    max_years: 15.0
+
+  # F4 — Zero JD-Relevant Skills
+  # Report: 72,294 candidates have zero tier1 skills.
+  # Tier2 rescue: AI title + product exp + 2+ tier2 + retrieval in desc → PASS
+  # Validated: rescues exactly CAND_0006833. Zero unexplained leaks.
+  zero_relevant_skills:
+    enabled: true
+    min_tier1_skills: 1
+    tier2_rescue:
+      enabled: true
+      min_tier2_skills: 2
+      requires_ai_title: true
+      requires_product_experience: true
+      requires_retrieval_in_descriptions: true
+
+  # F5 — Non-Technical Title + Zero Retrieval in Descriptions
+  # Checks descriptions NOT skills — descriptions harder to fake.
+  # Audit: zero false positives across all versions.
+  nontechnical_no_retrieval:
+    enabled: true
+
+  # F6 — Zero Product Company Experience
+  # Non-product = services + manufacturing + conglomerate + paper products.
+  # Audit: no false positives. 177 borderline pass correctly (Stage 4 handles).
+  zero_product_experience:
+    enabled: true
+    non_product_industries:
+      - "IT Services"
+      - "Consulting"
+      - "Staffing"
+      - "Outsourcing"
+      - "BPO/KPO"
+      - "Manufacturing"
+      - "Conglomerate"
+      - "Paper Products"
+
+  # F7 — Behaviorally Dead
+  # Both conditions required (AND not OR) to avoid over-elimination.
+  # Absolute floor: RR < 0.10 = hard reject regardless of activity.
+  # Audit: zero strong AI candidates lost.
+  behaviorally_dead:
+    enabled: true
+    max_days_inactive: 180
+    min_response_rate: 0.20
+    absolute_floor_rr: 0.10
+
+  # H1-hard — Impossible Skill Durations (majority)
+  # OUT if >50% of skills exceed YoE × 12 months.
+  # >50% threshold avoids punishing minor date entry errors.
+  impossible_skill_durations_hard:
+    enabled: true
+    max_impossible_ratio: 0.50
+
+  # H3 — Job Before Graduation (UPGRADED v4: now hard eliminate)
+  # Previously soft flag — promoted to hard eliminate after gap analysis.
+  #
+  # Gap distribution across 639 flagged candidates:
+  #   gap=2yr (250): PASS — legitimate B.Tech internship → full-time transition
+  #   gap>=3yr (389): OUT — no legitimate explanation, fabricated timeline
+  #
+  # Tolerance changed 1yr → 2yr to rescue 9 genuinely strong candidates
+  # (Search Engineer, AI Research Engineer, Senior AI Engineer etc.)
+  # Education schema uses integer end_year fields (not date strings).
+  job_before_graduation:
+    enabled: true
+    tolerance_years: 2    # job_start_year < grad_year - 2 → hard OUT
+
+  # H4 — Impossible Career Timeline
+  # OUT if total career months > YoE × 12 + 36.
+  # 36-month buffer handles overlapping/part-time roles.
+  # Only 2 eliminated — correctly narrow.
+  impossible_career_timeline:
+    enabled: true
+    buffer_months: 36
+
+
+# ══════════════════════════════════════════════════════════════
+# SOFT HONEYPOT FLAGS
+# Candidate PASSES but _honeypot_flags list attached for Stage 4.
+# ══════════════════════════════════════════════════════════════
+
+honeypot_flags:
+
+  # H1-soft: some (not majority) impossible skill durations
+  h1_soft_skill_duration:
+    enabled: true
+    flag_name: "H1_soft_skill_duration"
+
+  # H5: salary inversion — too common (18,865) to hard-eliminate
+  # meaningful only in combination with other flags
+  h5_salary_inversion:
+    enabled: true
+    flag_name: "H5_salary_inversion"
+
+  # H6: non-tech title + 2+ expert tier1 skills
+  # fires 0 times in practice (stuffers caught by F4/F5 first)
+  # kept as safety net for future data
+  h6_stuffer_expert_tier1:
+    enabled: true
+    flag_name: "H6_stuffer_expert_tier1"
+    min_expert_tier1_skills: 2
+
+  # H3 removed from soft flags — now a hard eliminate (gap >= 3yr)
+
+
+# ══════════════════════════════════════════════════════════════
+# STAGE 4 MULTIPLIERS (reference — applied in Stage 4 scorer)
+# ══════════════════════════════════════════════════════════════
+
+stage4_multipliers:
+  honeypot_penalty:
+    two_or_more_flags: 0.50
+    one_flag: 0.70
+    zero_flags: 1.00
+  location_penalty:
+    abroad_tier1_no_relocate: 0.35
+    abroad_willing_relocate: 0.75
+    india: 1.00
+  boilerplate_summary: 0.80
+  assessment_bonus: 1.10
+  behavioral_deep_dead: 0.40
