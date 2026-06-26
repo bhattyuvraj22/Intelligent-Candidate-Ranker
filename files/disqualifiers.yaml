@@ -1,0 +1,73 @@
+# Stage 1 Hard Filter Configuration
+# All thresholds are backed by dataset analysis report findings.
+# DO NOT tighten these without re-reading the report — false negatives
+# (good candidates eliminated here) cannot be recovered downstream.
+
+filters:
+
+  # F1 — Location / Willingness to Relocate
+  # Report: 75,113 India-based; 28,804 willing to relocate
+  # Rule: Pass if country == India OR willing_to_relocate == true
+  # Abroad + not willing = hard OUT (no relocation = unavailable for Noida/Pune role)
+  location:
+    enabled: true
+    require_india_or_relocate: true
+
+  # F2 — Consulting-Only Career
+  # Report: 9,745 candidates spent entire career at services firms → explicit JD disqualifier
+  # Rule: ALL career_history industries in SERVICES_INDUSTRIES → OUT
+  # ONE product stint anywhere = PASS (don't over-eliminate)
+  consulting_only:
+    enabled: true
+    services_industries:
+      - "IT Services"
+      - "Consulting"
+      - "Staffing"
+      - "Outsourcing"
+      - "BPO/KPO"
+
+  # F3 — Years of Experience Range
+  # Report: JD sweet spot 5–9 years; extended max to 15 to avoid cutting deep specialists
+  # Min = 3 (not 5) — a 3-year specialist with the right skills is worth evaluating
+  # Max = 15 (not 9) — senior architects with 12+ years can still fit founding team
+  # Pain point: old script used max=9, too aggressive
+  experience_band:
+    enabled: true
+    min_years: 3
+    max_years: 15
+
+  # F4 — Zero JD-Relevant Skills
+  # Report: 72,294 candidates have zero TIER1 skills → fast elimination
+  # Must have >=1 exact name match from TIER1_SKILLS set
+  # Note: skills are near-uniformly distributed (~5K each) — presence alone is weak
+  # but zero presence is a hard signal
+  zero_relevant_skills:
+    enabled: true
+    min_tier1_skills: 1
+
+  # F5 — Non-Technical Title + Zero Retrieval in Descriptions
+  # Report: 38,904 non-tech titles with AI keywords in profile (keyword stuffers)
+  # Rule: non-tech title AND no retrieval keywords in ANY career description → OUT
+  # CRITICAL: check descriptions, not skills (descriptions are harder to fake)
+  # If title is non-tech but descriptions show real work → PASS (catch edge cases)
+  nontechnical_title_no_retrieval:
+    enabled: true
+
+  # F6 — Zero Product Company Experience
+  # Report: 39,414 candidates have no product industry experience
+  # Rule: ALL career_history industries are in NON_PRODUCT_INDUSTRIES → OUT
+  # NON_PRODUCT = SERVICES + Manufacturing + Conglomerate + Paper Products
+  # Spot-check confirmed: F6 cuts .NET @ Cognizant, QA @ Wipro/Manufacturing — correct
+  zero_product_experience:
+    enabled: true
+
+  # F7 — Behaviorally Dead
+  # Report: 17,245 candidates have RR < 0.20 (effectively unreachable)
+  # Rule: last_active > 180 days AND RR < 0.20 → OUT (both conditions required)
+  # Pain point: no candidate active <30d — recency is relative; 30–90d = "active" tier
+  # Hard floor: RR < 0.10 regardless of last_active (completely unreachable)
+  behaviorally_dead:
+    enabled: true
+    max_days_inactive: 180
+    min_response_rate: 0.20
+    absolute_floor_rr: 0.10   # OUT regardless of last_active if RR below this
