@@ -1,0 +1,415 @@
+# ═══════════════════════════════════════════════════════════════════
+# Stage 2 — Structured Feature Scorer Configuration (FINAL)
+# All values validated against actual passed pool (11,415 candidates).
+# Do NOT hardcode anything in features.py or scorer.py.
+# ═══════════════════════════════════════════════════════════════════
+
+reference_date: "2026-06-26"
+
+# ── Output sizes ────────────────────────────────────────────────────
+stage2_output_size: 1500
+protected_shortlist_size: 200
+
+# ── Tier 1 Skills (core retrieval — trust-scored) ───────────────────
+# All 15 present in passed pool (815–895 candidates each)
+tier1_skills:
+  - "Embeddings"
+  - "FAISS"
+  - "Pinecone"
+  - "Elasticsearch"
+  - "OpenSearch"
+  - "Sentence Transformers"
+  - "BM25"
+  - "Information Retrieval"
+  - "Weaviate"
+  - "Qdrant"
+  - "Milvus"
+  - "Vector Search"
+  - "Haystack"
+  - "Recommendation Systems"
+  - "Learning to Rank"
+
+# ── Tier 2 Skills (supporting ML signal — count-based) ──────────────
+# All 12 present in passed pool (622–1993 candidates each)
+tier2_skills:
+  - "Hugging Face Transformers"
+  - "Fine-tuning LLMs"
+  - "MLflow"
+  - "Feature Engineering"
+  - "scikit-learn"
+  - "PyTorch"
+  - "RAG"
+  - "LangChain"
+  - "TensorFlow"
+  - "MLOps"
+  - "LoRA"
+  - "PEFT"
+
+# ── Skill name aliases (all lowercase raw → canonical Tier1/2 name)
+# FIX 5: used ONLY for skill.name matching, NOT description scanning
+skill_aliases:
+  "vector search": "Vector Search"
+  "semantic search": "Vector Search"
+  "similarity search": "Vector Search"
+  "dense retrieval": "Vector Search"
+  "approximate nearest neighbor": "Vector Search"
+  "ann search": "Vector Search"
+  "ann": "Vector Search"
+  "faiss": "FAISS"
+  "facebook ai similarity search": "FAISS"
+  "hugging face": "Hugging Face Transformers"
+  "huggingface": "Hugging Face Transformers"
+  "hf transformers": "Hugging Face Transformers"
+  "hugging face transformers": "Hugging Face Transformers"
+  "sentence-transformers": "Sentence Transformers"
+  "sbert": "Sentence Transformers"
+  "rag": "RAG"
+  "retrieval augmented generation": "RAG"
+  "lora": "LoRA"
+  "low-rank adaptation": "LoRA"
+  "peft": "PEFT"
+  "parameter efficient fine tuning": "PEFT"
+  "elasticsearch": "Elasticsearch"
+  "elastic search": "Elasticsearch"
+  "opensearch": "OpenSearch"
+  "open search": "OpenSearch"
+  "weaviate": "Weaviate"
+  "qdrant": "Qdrant"
+  "milvus": "Milvus"
+  "pinecone": "Pinecone"
+  "haystack": "Haystack"
+  "mlflow": "MLflow"
+  "ml flow": "MLflow"
+  "scikit-learn": "scikit-learn"
+  "sklearn": "scikit-learn"
+  "scikit learn": "scikit-learn"
+  "pytorch": "PyTorch"
+  "torch": "PyTorch"
+  "tensorflow": "TensorFlow"
+  "tf": "TensorFlow"
+  "feature engineering": "Feature Engineering"
+  "mlops": "MLOps"
+  "langchain": "LangChain"
+  "fine-tuning llms": "Fine-tuning LLMs"
+  "fine tuning llms": "Fine-tuning LLMs"
+  "llm fine-tuning": "Fine-tuning LLMs"
+  "llm finetuning": "Fine-tuning LLMs"
+  "recommendation systems": "Recommendation Systems"
+  "recommender systems": "Recommendation Systems"
+  "recsys": "Recommendation Systems"
+  "bm25": "BM25"
+  "information retrieval": "Information Retrieval"
+  "embeddings": "Embeddings"
+  "embedding": "Embeddings"
+  "word embeddings": "Embeddings"
+  "dense embeddings": "Embeddings"
+  "learning to rank": "Learning to Rank"
+  "ltr": "Learning to Rank"
+  "lambdamart": "Learning to Rank"
+
+# ── Retrieval keywords for description scanning (raw — all aliases)
+# FIX 5: SEPARATE from skill_aliases — full vocabulary of how engineers
+#         describe retrieval work in free text
+retrieval_keywords_raw:
+  - "embedding"
+  - "embeddings"
+  - "vector"
+  - "faiss"
+  - "pinecone"
+  - "elasticsearch"
+  - "opensearch"
+  - "weaviate"
+  - "qdrant"
+  - "milvus"
+  - "retrieval"
+  - "information retrieval"
+  - "recommendation"
+  - "ranking"
+  - "rerank"
+  - "re-rank"
+  - "semantic search"
+  - "dense retrieval"
+  - "hybrid search"
+  - "approximate nearest"
+  - "nearest neighbour"
+  - "nearest neighbor"
+  - "sentence transformer"
+  - "bm25"
+  - "haystack"
+  - "langchain"
+  - "machine learning"
+  - "deep learning"
+  - "fine-tun"
+  - "fine tuning"
+  - "transformer"
+  - "neural network"
+  - "scikit"
+  - "pytorch"
+  - "tensorflow"
+  - "xgboost"
+  - "lightgbm"
+  - "learning to rank"
+  - "ndcg"
+  - "mlflow"
+  - "mlops"
+  - "feature engineering"
+  - "a/b test"
+  - "ab test"
+  - "vector database"
+  - "vector db"
+  - "rag"
+  - "retrieval augmented"
+  - "passage retrieval"
+  - "dense passage"
+  - "collaborative filtering"
+  - "matrix factorization"
+  - "neural ranking"
+  - "sparse retrieval"
+
+# ── ML Titles for career history classification (all lowercase)
+# FIX 2: explicitly defined
+ml_titles:
+  - "ml engineer"
+  - "machine learning engineer"
+  - "ai engineer"
+  - "nlp engineer"
+  - "data scientist"
+  - "research engineer"
+  - "research scientist"
+  - "applied ml engineer"
+  - "applied scientist"
+  - "recommendation systems engineer"
+  - "search engineer"
+  - "ranking engineer"
+  - "nlp scientist"
+  - "deep learning engineer"
+  - "applied researcher"
+  - "ml researcher"
+  - "ai researcher"
+  - "mlops engineer"
+  - "ml platform engineer"
+  - "computer vision engineer"
+  - "analytics engineer"       # included — feature pipelines overlap
+  - "data engineer"            # included — often builds ML-adjacent pipelines
+
+# ── ML Industries
+# FIX 2: explicitly defined
+ml_industries:
+  - "AI/ML"
+  - "Software"
+  - "Fintech"
+  - "Food Delivery"
+  - "E-commerce"
+  - "Transportation"
+  - "SaaS"
+  - "EdTech"
+  - "HealthTech"
+  - "Gaming"
+  - "AdTech"
+  - "HealthTech AI"
+  - "Conversational AI"
+
+# ── Product Industries (broader than ML — for product_ratio)
+product_industries:
+  - "AI/ML"
+  - "Software"
+  - "Fintech"
+  - "Food Delivery"
+  - "E-commerce"
+  - "Transportation"
+  - "SaaS"
+  - "EdTech"
+  - "HealthTech"
+  - "Gaming"
+  - "AdTech"
+  - "Insurance Tech"
+  - "HealthTech AI"
+  - "Conversational AI"
+
+# ── Proficiency scores
+proficiency_scores:
+  expert: 1.0
+  advanced: 0.75
+  intermediate: 0.45
+  beginner: 0.15
+
+# ── Expected endorsements + duration per proficiency (dataset medians)
+expected_by_proficiency:
+  expert:
+    endorsements: 28
+    duration_months: 65
+  advanced:
+    endorsements: 16
+    duration_months: 29
+  intermediate:
+    endorsements: 7
+    duration_months: 21
+  beginner:
+    endorsements: 7
+    duration_months: 10
+
+# ── Tier 1 normalization ceiling
+# FIX 4: Data-validated — actual max raw trust = 7.0, p99 = 2.75
+# Setting max_possible = 2.75 means p99 candidate scores ~1.0
+# p95 (1.50) scores 0.55 — good discrimination in the meaningful range
+# Previous value of 3.75 was too high (max would score 1.87 uncapped)
+tier1_max_possible: 2.75
+
+# ── Tier 2 saturation: 4+ tier2 skills = full score
+tier2_saturation_count: 4
+
+# ── Description depth saturation: 8+ unique keyword hits = full score
+desc_depth_saturation: 8
+
+# ── Career temporal decay (career-position-based — FIX 1)
+temporal_decay:
+  current_role_is_ml: 1.0
+  ml_role_under_2yr: 0.75
+  ml_role_2_to_4yr: 0.50
+  ml_role_over_4yr: 0.35
+  no_ml_role_found: 0.30
+
+# ── Title relevance tiers (first match wins)
+title_relevance_tiers:
+  - score: 1.0
+    keywords:
+      - "ml engineer"
+      - "machine learning engineer"
+      - "ai engineer"
+      - "nlp engineer"
+      - "recommendation systems engineer"
+      - "search engineer"
+      - "ranking engineer"
+      - "applied ml"
+      - "applied scientist"
+      - "research scientist"
+  - score: 0.80
+    keywords:
+      - "data scientist"
+      - "research engineer"
+      - "ai researcher"
+      - "ml researcher"
+      - "mlops engineer"
+      - "ml platform"
+  - score: 0.55
+    keywords:
+      - "software engineer"
+      - "backend engineer"
+      - "full stack"
+      - "full-stack"
+      - "platform engineer"
+      - "analytics engineer"
+  - score: 0.35
+    keywords:
+      - "data engineer"
+      - "devops engineer"
+      - "cloud engineer"
+      - "infrastructure engineer"
+      - "java developer"
+      - ".net developer"
+      - "mobile developer"
+      - "frontend engineer"
+      - "qa engineer"
+
+# ── Education tier scores
+education_tier_scores:
+  tier_1: 1.0
+  tier_2: 0.70
+  tier_3: 0.45
+  tier_4: 0.25
+  unknown: 0.35
+
+# ── Notice period → score mapping
+# FIX: added explicit >90 default (0.35) + >180 handled via default in code
+# Data: no candidate has notice > 180d in passed pool
+notice_period_scores:
+  0: 1.0
+  30: 0.90
+  60: 0.75
+  90: 0.55
+  180: 0.20
+
+# ── Behavioral saturation caps — DATA-VALIDATED
+# FIX: search_saturation raised 350→500 (good-fit mean=471, p75=676)
+# FIX: saved_saturation raised 20→27 (good-fit mean=26.6, median=27)
+search_saturation: 500
+saved_saturation: 27
+
+# ── Honeypot penalty
+# FIX 3: 3 flags only — duration overlap removed from here
+# (duration handled exclusively by skill_credibility_mult)
+honeypot_penalty_map:
+  0: 1.0
+  1: 0.70
+  2: 0.50
+  3: 0.30
+
+# ── Location scoring — ADDITIVE penalty (not multiplicative multiplier)
+# Why additive: multiplicative 0.35 took raw=0.90 → 0.315, burying exceptional
+# abroad engineers below mediocre India candidates. Additive max=0.18 takes
+# raw=0.90 → ≥0.72 (floor: pre_location × location_floor_factor).
+#
+# Data: India-target=68%, Abroad-no-relocate=16%, India-premium=8.9%, Abroad-relocate=7.2%
+premium_cities:
+  - noida
+  - pune
+target_cities:
+  - hyderabad
+  - bangalore
+  - bengaluru
+  - mumbai
+  - delhi
+  - gurgaon
+  - gurugram
+  - chennai
+  - ncr
+
+# Additive penalties — subtracted from pre_location score
+location_penalties:
+  india_premium: 0.00        # noida / pune — JD office cities, zero penalty
+  india_target: 0.03         # major metros — easy commute / likely hybrid
+  india_other_willing: 0.06  # tier-2/3 city, willing to relocate
+  india_other: 0.10          # tier-2/3 city, not willing to relocate
+  abroad_willing: 0.12       # outside India, willing to relocate
+  abroad_no_relocate: 0.18   # outside India, not relocating (max penalty)
+
+# Floor: final_score >= pre_location * location_floor_factor
+# Prevents compound stacking (honeypot + location) from crushing strong candidates.
+# At 0.60 floor: a pre_location=0.90 abroad candidate lands >= 0.54.
+location_floor_factor: 0.60
+
+# ── ML YoE saturation: 60 months (5 years) = full score
+# Data: ml_months mean=39, median=38 — good discrimination at 60mo ceiling
+ml_yoe_saturation_months: 60
+
+# ── Component weights (sum = 1.0)
+component_weights:
+  skill: 0.45
+  career: 0.30
+  behavioral: 0.25
+
+# ── Skill sub-weights (sum = 1.0)
+skill_weights:
+  tier1: 0.60
+  tier2: 0.25
+  assessment: 0.15
+
+# ── Career sub-weights (sum = 1.0)
+career_weights:
+  product_ratio: 0.30
+  momentum: 0.25
+  ml_yoe: 0.20
+  title_relevance: 0.15
+  stability_edu: 0.10
+
+# ── Behavioral sub-weights (sum = 1.0)
+# FIX 7: search_norm reduced 20%→10% (circularity risk)
+# response_rate raised 25%→30%, recency raised 20%→25%
+# Justified by separation: RR 1.26x sep, search 2.44x but circularity concern
+behavioral_weights:
+  response_rate: 0.30
+  recency: 0.25
+  interview: 0.15
+  availability: 0.10
+  search_norm: 0.10
+  saved: 0.10

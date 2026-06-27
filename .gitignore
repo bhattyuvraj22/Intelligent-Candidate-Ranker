@@ -5,3 +5,4 @@ __pycache__/
 *.pyd
 output/
 *.jsonl
+.DS_Store
